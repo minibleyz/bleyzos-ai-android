@@ -21,15 +21,24 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # На раннере уже есть Android SDK; принимаем лицензии на всякий случай
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # Android SDK уже установлен на раннере (ANDROID_HOME) — отдельный setup-android не нужен.
+      # Принимаем лицензии, чтобы Gradle мог докачать platforms;android-35 и build-tools.
+      - name: Accept Android SDK licenses
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
 
       # gradlew в репозитории нет, поэтому ставим Gradle 8.9 напрямую
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
+
+      # Шрифты (OFL) не хранятся в репозитории — подтягиваем перед сборкой
+      - name: Download fonts (Onest, Unbounded)
+        run: |
+          d=modules/bleyzosAIDesignModule/src/main/assets/fonts
+          mkdir -p "$d"
+          curl -fsSL -o "$d/Onest-Variable.ttf" "https://raw.githubusercontent.com/google/fonts/main/ofl/onest/Onest%5Bwght%5D.ttf"
+          curl -fsSL -o "$d/Unbounded-Variable.ttf" "https://raw.githubusercontent.com/google/fonts/main/ofl/unbounded/Unbounded%5Bwght%5D.ttf"
 
       - name: Build debug APK
         run: gradle :app:assembleDebug --stacktrace
