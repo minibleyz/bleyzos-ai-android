@@ -4,14 +4,18 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Build
 import android.provider.OpenableColumns
 import android.view.Choreographer
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.animation.PathInterpolator
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -454,5 +458,32 @@ class BzChatScreen(
         if (artifactPanel.panelVisible) { openArtifact = null; artifactPanel.hide(); return true }
         if (drawer.isOpen) { drawer.close(); return true }
         return false
+    }
+
+    /* ─────────────────────────── клавиатура ─────────────────────────── */
+
+    /**
+     * Тап в любое место экрана, кроме самого поля ввода (по кнопкам и сообщениям тоже
+     * можно тапать — их обработчики клика отрабатывают как обычно), убирает фокус
+     * с EditText и скрывает клавиатуру.
+     */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (ev.action == MotionEvent.ACTION_DOWN) {
+            val focused = findFocus()
+            if (focused is EditText) {
+                val r = Rect()
+                focused.getGlobalVisibleRect(r)
+                if (!r.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                    focused.clearFocus()
+                    hideKeyboard(focused)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    private fun hideKeyboard(view: View) {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        imm?.hideSoftInputFromWindow(view.windowToken, 0)
     }
 }
