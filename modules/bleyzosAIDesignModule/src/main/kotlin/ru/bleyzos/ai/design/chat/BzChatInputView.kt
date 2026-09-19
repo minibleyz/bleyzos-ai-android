@@ -85,6 +85,10 @@ class BzChatInputView(context: Context) : LinearLayout(context) {
             maxHeight = dpi(200)
             setPadding(dpi(4), dpi(8), dpi(4), dpi(8))
             gravity = Gravity.CENTER_VERTICAL
+            // Без этого Android добавляет «воздух» сверху/снизу текста (font ascent/descent
+            // с запасом), и плейсхолдер визуально едет вниз относительно кнопок — текст
+            // выглядит «криво» посаженным в строке ввода.
+            includeFontPadding = false
             addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) = refresh()
                 override fun beforeTextChanged(s: CharSequence?, st: Int, c: Int, a: Int) {}
