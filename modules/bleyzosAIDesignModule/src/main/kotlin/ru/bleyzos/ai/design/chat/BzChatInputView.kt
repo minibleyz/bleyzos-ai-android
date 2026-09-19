@@ -72,7 +72,7 @@ class BzChatInputView(context: Context) : LinearLayout(context) {
         val attach = BzIconButton(context, BzIcon.PAPERCLIP, 36, 18)
         attach.contentDescription = "Прикрепить файл"
         attach.setOnClickListener { onPickFiles?.invoke() }
-        box.add(attach, size(36), size(36), mb = 2)
+        box.add(attach, size(36), size(36))
 
         edit = EditText(context).apply {
             background = null
@@ -83,6 +83,14 @@ class BzChatInputView(context: Context) : LinearLayout(context) {
             typeface = BzFonts.sans(context, 400)
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
             maxHeight = dpi(200)
+            // Раньше высота однострочного поля (текст + паддинги, ~33dp) не совпадала
+            // с высотой кнопок (36dp), а компенсировалось это подобранным «на глаз»
+            // отступом у кнопок (mb = 2) — не точно, поэтому текст всё равно сидел чуть
+            // мимо центра. minimumHeight жёстко приравнивает однострочное поле к высоте
+            // кнопок, а gravity CENTER_VERTICAL центрует текст внутри этой высоты — при
+            // росте в несколько строк поле по-прежнему тянется вверх (gravity BOTTOM
+            // контейнера), кнопки остаются внизу вровень с последней строкой.
+            minimumHeight = dpi(36)
             setPadding(dpi(4), dpi(8), dpi(4), dpi(8))
             gravity = Gravity.CENTER_VERTICAL
             // Без этого Android добавляет «воздух» сверху/снизу текста (font ascent/descent
@@ -114,7 +122,7 @@ class BzChatInputView(context: Context) : LinearLayout(context) {
         stopBtn.setOnClickListener { onStop?.invoke() }
         slot.addView(sendBtn, FrameLayout.LayoutParams(dpi(36), dpi(36)))
         slot.addView(stopBtn, FrameLayout.LayoutParams(dpi(36), dpi(36)))
-        box.add(slot, size(36), size(36), mb = 2)
+        box.add(slot, size(36), size(36))
         inner.add(box, MATCH)
 
         val note = context.bzText("Bleyzos AI может ошибаться — проверяйте важную информацию.", 12f, BzColors.faint)
